@@ -704,47 +704,49 @@
         // Флаг загрузки курсов валют
         let currencyRatesLoaded = false;
 
-        // Функция загрузки курсов валют
         async function loadCurrencyRates() {
             try {
                 currencyUpdateInfo.innerHTML = '<span class="loading"></span> Загрузка курсов валют...';
-                
-                // Используем бесплатный API для получения курсов валют
-                const response = await fetch('https://api.exchangerate.host/latest?base=USD');
+        
+                // Запрос с API-ключом
+                const response = await fetch(
+                    'https://api.exchangerate.host/latest?base=USD&access_key=128771b7d8278d27ca24de18e2afdc6a'
+                );
                 const data = await response.json();
-                
-                if (data && data.rates) {
-                    // Обновляем курсы валют
+        
+                if (data && data.success && data.rates) {
                     for (const currency in units.currency) {
-                        if (data.rates[currency]) {
+                        if (currency === 'USD') {
+                            units.currency.USD.rate = 1;
+                        } else if (data.rates[currency]) {
                             units.currency[currency].rate = data.rates[currency];
                         }
                     }
-                    
+        
                     currencyRatesLoaded = true;
-                    const updateDate = new Date(data.date).toLocaleDateString(currentLanguage === 'ru' ? 'ru-RU' : 'en-US');
+                    const updateDate = new Date(data.date).toLocaleDateString(
+                        currentLanguage === 'ru' ? 'ru-RU' : 'en-US'
+                    );
                     currencyUpdateInfo.textContent = `Курсы валют актуальны на: ${updateDate}`;
-                    
-                    // Если выбран тип конвертации "валюта", обновляем результат
+        
                     if (conversionTypeSelect.value === 'currency') {
                         convertUnits();
                     }
                 } else {
-                    throw new Error('Не удалось получить данные о курсах валют');
+                    throw new Error(data.error?.info || 'Не удалось получить данные о курсах валют');
                 }
             } catch (error) {
                 console.error('Ошибка загрузки курсов валют:', error);
-                currencyUpdateInfo.textContent = 'Не удалось загрузить курсы валют. Используются базовые значения.';
-                
-                // Устанавливаем фиктивные значения для демонстрации
+                currencyUpdateInfo.textContent =
+                    'Не удалось загрузить курсы валют. Используются базовые значения.';
+        
                 units.currency.EUR.rate = 0.85;
                 units.currency.GBP.rate = 0.75;
                 units.currency.JPY.rate = 110.5;
                 units.currency.RUB.rate = 75.3;
-                
+        
                 currencyRatesLoaded = true;
-                
-                // Если выбран тип конвертации "валюта", обновляем результат
+        
                 if (conversionTypeSelect.value === 'currency') {
                     convertUnits();
                 }

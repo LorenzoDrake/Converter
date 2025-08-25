@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конвертер единиц</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Стили остаются без изменений */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            overflow: hidden;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        
+        #particles-js {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        }
+        
+        .gradient-bg {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.6;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(106, 17, 203, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(37, 117, 252, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(255, 107, 107, 0.2) 0%, transparent 50%);
+            animation: gradientShift 15s ease infinite;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 0%, 0% 0%, 0% 0%; }
+            50% { background-position: 100% 100%, 100% 100%, 100% 100%; }
+            100% { background-position: 0% 0%, 0% 0%, 0% 0%; }
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 500px;
+            padding: 30px;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transform: translateY(0);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .language-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        
+        .language-btn {
+            background: rgba(37, 117, 252, 0.1);
+            border: 1px solid rgba(37, 117, 252, 0.3);
+            border-radius: 20px;
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            color: #2575fc;
+            backdrop-filter: blur(5px);
+        }
+        
+        .language-btn:hover {
+            background: rgba(37, 117, 252, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .converter-type {
+            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .converter-type select {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(221, 221, 221, 0.5);
+            font-size: 16px;
+            background-color: rgba(249, 249, 249, 0.8);
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .converter-type select:focus {
+            outline: none;
+            border-color: #2575fc;
+            box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.1);
+        }
+        
+        .icon-selector {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        
+        .icon-option {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex: 1;
+            margin: 0 5px;
+            background: rgba(240, 248, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .icon-option:hover {
+            background: rgba(240, 248, 255, 0.8);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .icon-option.active {
+            background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+            color: white;
+            box-shadow: 0 5px 15px rgba(37, 117, 252, 0.3);
+        }
+        
+        .icon-option i {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .icon-option span {
+            font-size: 12px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        .input-group, .result-group {
+            display: flex;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+        
+        .input-group input, .result-group input {
+            flex: 1;
+            padding: 14px 15px;
+            border-radius: 10px 0 0 10px;
+            border: 1px solid rgba(221, 221, 221, 0.5);
+            border-right: none;
+            font-size: 16px;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus, .result-group input:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(37, 117, 252, 0.1);
+        }
+        
+        .input-group select, .result-group select {
+            padding: 14px 15px;
+            border-radius: 0 10px 10px 0;
+            border: 1px solid rgba(221, 221, 221, 0.5);
+            background-color: rgba(249, 249, 249, 0.8);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group select:focus, .result-group select:focus {
+            outline: none;
+            border-color: #2575fc;
+        }
+        
+        .arrow-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .arrow {
+            font-size: 28px;
+            color: #2575fc;
+            margin: 0 15px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.1); }
+            100% { opacity: 0.7; transform: scale(1); }
+        }
+        
+        .swap-button {
+            background: linear-gradient(135deg, #2575fc 0%, #6a11cb 100%);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(37, 117, 252, 0.3);
+        }
+        
+        .swap-button:hover {
+            transform: rotate(180deg) scale(1.1);
+            box-shadow: 0 6px 15px rgba(37, 117, 252, 0.4);
+        }
+        
+        .info {
+            background: rgba(240, 248, 255, 0.7);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #2575fc;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
+        }
+        
+        .currency-update {
+            font-size: 12px;
+            text-align: center;
+            margin-top: 10px;
+            color: #666;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 8px;
+            border-radius: 8px;
+            backdrop-filter: blur(5px);
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(37, 117, 252, 0.3);
+            border-radius: 50%;
+            border-top-color: #2575fc;
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 500px) {
+            body {
+                padding: 15px;
+            }
+            
+            .container {
+                padding: 20px;
+                backdrop-filter: blur(5px);
+            }
+            
+            .language-switcher {
+                position: static;
+                margin-bottom: 15px;
+                display: flex;
+                justify-content: flex-end;
+            }
+            
+            .input-group, .result-group {
+                flex-direction: column;
+            }
+            
+            .input-group input, .result-group input,
+            .input-group select, .result-group select {
+                width: 100%;
+                border-radius: 10px;
+                margin-bottom: 10px;
+                border-right: 1px solid rgba(221, 221, 221, 0.5);
+            }
+            
+            .icon-option {
+                padding: 10px 5px;
+            }
+            
+            .icon-option i {
+                font-size: 20px;
+            }
+            
+            .icon-option span {
+                font-size: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="particles-js"></div>
+    <div class="gradient-bg"></div>
+    
+    <div class="container">
+        <h1 data-i18n="title">Конвертер единиц</h1>
+        
+        <div class="language-switcher">
+            <button class="language-btn" id="languageButton">
+                <i class="fas fa-globe"></i>
+                <span>EN</span>
+            </button>
+        </div>
+        
+        <div class="converter-type">
+            <select id="conversionType">
+                <option value="temperature" data-i18n="temperature">Температура</option>
+                <option value="length" data-i18n="length">Длина</option>
+                <option value="weight" data-i18n="weight">Вес</option>
+                <option value="currency" data-i18n="currency">Валюта</option>
+            </select>
+            
+            <div class="icon-selector">
+                <div class="icon-option active" data-type="temperature">
+                    <i class="fas fa-temperature-high"></i>
+                    <span data-i18n="temperature">Температура</span>
+                </div>
+                <div class="icon-option" data-type="length">
+                    <i class="fas fa-ruler-combined"></i>
+                    <span data-i18n="length">Длина</span>
+                </div>
+                <div class="icon-option" data-type="weight">
+                    <i class="fas fa-weight"></i>
+                    <span data-i18n="weight">Вес</span>
+                </div>
+                <div class="icon-option" data-type="currency">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span data-i18n="currency">Валюта</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-group">
+            <input type="number" id="inputValue" placeholder="Введите значение" step="any" data-i18n-ph="inputPlaceholder">
+            <select id="inputUnit"></select>
+        </div>
+        
+        <div class="arrow-container">
+            <div class="arrow">↓</div>
+            <button class="swap-button" id="swapButton" title="Поменять единицы местами" data-i18n-title="swapTitle">
+                <i class="fas fa-exchange-alt"></i>
+            </button>
+            <div class="arrow">↑</div>
+        </div>
+        
+        <div class="result-group">
+            <input type="text" id="resultValue" readonly>
+            <select id="resultUnit"></select>
+        </div>
+        
+        <div class="info" id="conversionInfo">
+            Конвертация единиц измерения. Введите значение и выберите единицы измерения.
+        </div>
+        
+        <div class="currency-update" id="currencyUpdateInfo">
+            Курсы валют загружаются...
+        </div>
+    </div>
+
+    <!-- Подключаем библиотеку частиц -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    
+    <script>
+        // Инициализация частиц для фона
+        document.addEventListener('DOMContentLoaded', function() {
+            particlesJS('particles-js', {
+                "particles": {
+                    "number": {
+                        "value": 100,
+                        "density": {
+                            "enable": true,
+                            "value_area": 800
+                        }
+                    },
+                    "color": {
+                        "value": "#ffffff"
+                    },
+                    "shape": {
+                        "type": "circle",
+                        "stroke": {
+                            "width": 0,
+                            "color": "#000000"
+                        }
+                    },
+                    "opacity": {
+                        "value": 0.5,
+                        "random": true,
+                        "anim": {
+                            "enable": true,
+                            "speed": 1,
+                            "opacity_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "size": {
+                        "value": 3,
+                        "random": true,
+                        "anim": {
+                            "enable": true,
+                            "speed": 2,
+                            "size_min": 0.1,
+                            "sync": false
+                        }
+                    },
+                    "line_linked": {
+                        "enable": true,
+                        "distance": 150,
+                        "color": "#ffffff",
+                        "opacity": 0.4,
+                        "width": 1
+                    },
+                    "move": {
+                        "enable": true,
+                        "speed": 2,
+                        "direction": "none",
+                        "random": true,
+                        "straight": false,
+                        "out_mode": "out",
+                        "bounce": false,
+                        "attract": {
+                            "enable": true,
+                            "rotateX": 600,
+                            "rotateY": 1200
+                        }
+                    }
+                },
+                "interactivity": {
+                    "detect_on": "canvas",
+                    "events": {
+                        "onhover": {
+                            "enable": true,
+                            "mode": "grab"
+                        },
+                        "onclick": {
+                            "enable": true,
+                            "mode": "push"
+                        },
+                        "resize": true
+                    },
+                    "modes": {
+                        "grab": {
+                            "distance": 140,
+                            "line_linked": {
+                                "opacity": 1
+                            }
+                        },
+                        "push": {
+                            "particles_nb": 4
+                        }
+                    }
+                },
+                "retina_detect": true
+            });
+        });
+
+        // Определяем единицы измерения для каждого типа конвертации с поддержкой двух языков
+        const units = {
+            temperature: {
+                'celsius': { 
+                    ru: {name: 'Цельсий', symbol: '°C'}, 
+                    en: {name: 'Celsius', symbol: '°C'},
+                    toBase: (val) => val, 
+                    fromBase: (val) => val 
+                },
+                'fahrenheit': { 
+                    ru: {name: 'Фаренгейт', symbol: '°F'}, 
+                    en: {name: 'Fahrenheit', symbol: '°F'},
+                    toBase: (val) => (val - 32) * 5/9, 
+                    fromBase: (val) => val * 9/5 + 32 
+                },
+                'kelvin': { 
+                    ru: {name: 'Кельвин', symbol: 'K'}, 
+                    en: {name: 'Kelvin', symbol: 'K'},
+                    toBase: (val) => val - 273.15, 
+                    fromBase: (val) => val + 273.15 
+                }
+            },
+            length: {
+                'meter': { 
+                    ru: {name: 'Метр', symbol: 'м'}, 
+                    en: {name: 'Meter', symbol: 'm'},
+                    toBase: (val) => val, 
+                    fromBase: (val) => val 
+                },
+                'kilometer': { 
+                    ru: {name: 'Километр', symbol: 'км'}, 
+                    en: {name: 'Kilometer', symbol: 'km'},
+                    toBase: (val) => val * 1000, 
+                    fromBase: (val) => val / 1000 
+                },
+                'centimeter': { 
+                    ru: {name: 'Сантиметр', symbol: 'см'}, 
+                    en: {name: 'Centimeter', symbol: 'cm'},
+                    toBase: (val) => val / 100, 
+                    fromBase: (val) => val * 100 
+                },
+                'millimeter': { 
+                    ru: {name: 'Миллиметр', symbol: 'мм'}, 
+                    en: {name: 'Millimeter', symbol: 'mm'},
+                    toBase: (val) => val / 1000, 
+                    fromBase: (val) => val * 1000 
+                },
+                'inch': { 
+                    ru: {name: 'Дюйм', symbol: 'дюйм'}, 
+                    en: {name: 'Inch', symbol: 'in'},
+                    toBase: (val) => val * 0.0254, 
+                    fromBase: (val) => val / 0.0254 
+                },
+                'foot': { 
+                    ru: {name: 'Фут', symbol: 'фут'}, 
+                    en: {name: 'Foot', symbol: 'ft'},
+                    toBase: (val) => val * 0.3048, 
+                    fromBase: (val) => val / 0.3048 
+                },
+                'yard': { 
+                    ru: {name: 'Ярд', symbol: 'ярд'}, 
+                    en: {name: 'Yard', symbol: 'yd'},
+                    toBase: (val) => val * 0.9144, 
+                    fromBase: (val) => val / 0.9144 
+                },
+                'mile': { 
+                    ru: {name: 'Миля', symbol: 'миля'}, 
+                    en: {name: 'Mile', symbol: 'mi'},
+                    toBase: (val) => val * 1609.34, 
+                    fromBase: (val) => val / 1609.34 
+                }
+            },
+            weight: {
+                'kilogram': { 
+                    ru: {name: 'Килограмм', symbol: 'кг'}, 
+                    en: {name: 'Kilogram', symbol: 'kg'},
+                    toBase: (val) => val, 
+                    fromBase: (val) => val 
+                },
+                'gram': { 
+                    ru: {name: 'Грамм', symbol: 'г'}, 
+                    en: {name: 'Gram', symbol: 'g'},
+                    toBase: (val) => val / 1000, 
+                    fromBase: (val) => val * 1000 
+                },
+                'milligram': { 
+                    ru: {name: 'Миллиграмм', symbol: 'мг'}, 
+                    en: {name: 'Milligram', symbol: 'mg'},
+                    toBase: (val) => val / 1000000, 
+                    fromBase: (val) => val * 1000000 
+                },
+                'pound': { 
+                    ru: {name: 'Фунт', symbol: 'фунт'}, 
+                    en: {name: 'Pound', symbol: 'lb'},
+                    toBase: (val) => val * 0.453592, 
+                    fromBase: (val) => val / 0.453592 
+                },
+                'ounce': { 
+                    ru: {name: 'Унция', symbol: 'унция'}, 
+                    en: {name: 'Ounce', symbol: 'oz'},
+                    toBase: (val) => val * 0.0283495, 
+                    fromBase: (val) => val / 0.0283495 
+                }
+            },
+            currency: {
+                'USD': { 
+                    ru: {name: 'Доллар США', symbol: '$'}, 
+                    en: {name: 'US Dollar', symbol: '$'},
+                    rate: 1
+                },
+                'EUR': { 
+                    ru: {name: 'Евро', symbol: '€'}, 
+                    en: {name: 'Euro', symbol: '€'},
+                    rate: 1
+                },
+                'GBP': { 
+                    ru: {name: 'Фунт стерлингов', symbol: '£'}, 
+                    en: {name: 'British Pound', symbol: '£'},
+                    rate: 1
+                },
+                'JPY': { 
+                    ru: {name: 'Японская иена', symbol: '¥'}, 
+                    en: {name: 'Japanese Yen', symbol: '¥'},
+                    rate: 1
+                },
+                'RUB': { 
+                    ru: {name: 'Российский рубль', symbol: '₽'}, 
+                    en: {name: 'Russian Ruble', symbol: '₽'},
+                    rate: 1
+                }
+            }
+        };
+
+        // Стандартные единицы для каждого типа конвертации (используем ключи)
+        const defaultUnits = {
+            temperature: { input: 'celsius', result: 'fahrenheit' },
+            length: { input: 'meter', result: 'kilometer' },
+            weight: { input: 'kilogram', result: 'gram' },
+            currency: { input: 'USD', result: 'EUR' }
+        };
+
+        // Информация о каждом типе конвертации
+        const conversionInfo = {
+            temperature: {
+                ru: "Конвертация температуры между градусами Цельсия, Фаренгейта и Кельвина.",
+                en: "Temperature conversion between Celsius, Fahrenheit and Kelvin."
+            },
+            length: {
+                ru: "Конвертация длины между метрическими и имперскими единицами измерения.",
+                en: "Length conversion between metric and imperial units."
+            },
+            weight: {
+                ru: "Конвертация массы между метрическими и имперскими единицами измерения.",
+                en: "Weight conversion between metric and imperial units."
+            },
+            currency: {
+                ru: "Конвертация валют по актуальным курсам.",
+                en: "Currency conversion at current exchange rates."
+            }
+        };
+
+        // Тексты для перевода
+        const translations = {
+            ru: {
+                "title": "Конвертер единиц",
+                "temperature": "Температура",
+                "length": "Длина",
+                "weight": "Вес",
+                "currency": "Валюта",
+                "inputPlaceholder": "Введите значение",
+                "swapTitle": "Поменять единицы местами",
+                "defaultInfo": "Конвертация единиц измерения. Введите значение и выберите единицы измерения."
+            },
+            en: {
+                "title": "Unit Converter",
+                "temperature": "Temperature",
+                "length": "Length",
+                "weight": "Weight",
+                "currency": "Currency",
+                "inputPlaceholder": "Enter value",
+                "swapTitle": "Swap units",
+                "defaultInfo": "Unit conversion. Enter a value and select units."
+            }
+        };
+
+        // Элементы DOM
+        const conversionTypeSelect = document.getElementById('conversionType');
+        const inputValue = document.getElementById('inputValue');
+        const inputUnit = document.getElementById('inputUnit');
+        const resultValue = document.getElementById('resultValue');
+        const resultUnit = document.getElementById('resultUnit');
+        const conversionInfoElement = document.getElementById('conversionInfo');
+        const iconOptions = document.querySelectorAll('.icon-option');
+        const swapButton = document.getElementById('swapButton');
+        const languageButton = document.getElementById('languageButton');
+        const currencyUpdateInfo = document.getElementById('currencyUpdateInfo');
+        
+        // Текущий язык (по умолчанию русский)
+        let currentLanguage = 'ru';
+        
+        // Флаг загрузки курсов валют
+        let currencyRatesLoaded = false;
+
+        // Функция загрузки курсов валют
+        async function loadCurrencyRates() {
+            try {
+                currencyUpdateInfo.innerHTML = '<span class="loading"></span> Загрузка курсов валют...';
+                
+                // Используем бесплатный API для получения курсов валют
+                const response = await fetch('https://api.exchangerate.host/latest?base=USD');
+                const data = await response.json();
+                
+                if (data && data.rates) {
+                    // Обновляем курсы валют
+                    for (const currency in units.currency) {
+                        if (data.rates[currency]) {
+                            units.currency[currency].rate = data.rates[currency];
+                        }
+                    }
+                    
+                    currencyRatesLoaded = true;
+                    const updateDate = new Date(data.date).toLocaleDateString(currentLanguage === 'ru' ? 'ru-RU' : 'en-US');
+                    currencyUpdateInfo.textContent = `Курсы валют актуальны на: ${updateDate}`;
+                    
+                    // Если выбран тип конвертации "валюта", обновляем результат
+                    if (conversionTypeSelect.value === 'currency') {
+                        convertUnits();
+                    }
+                } else {
+                    throw new Error('Не удалось получить данные о курсах валют');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки курсов валют:', error);
+                currencyUpdateInfo.textContent = 'Не удалось загрузить курсы валют. Используются базовые значения.';
+                
+                // Устанавливаем фиктивные значения для демонстрации
+                units.currency.EUR.rate = 0.85;
+                units.currency.GBP.rate = 0.75;
+                units.currency.JPY.rate = 110.5;
+                units.currency.RUB.rate = 75.3;
+                
+                currencyRatesLoaded = true;
+                
+                // Если выбран тип конвертации "валюта", обновляем результат
+                if (conversionTypeSelect.value === 'currency') {
+                    convertUnits();
+                }
+            }
+        }
+
+        // Функция перевода интерфейса
+        function translateInterface(lang) {
+            // Обновляем тексты элементов с атрибутом data-i18n
+            document.querySelectorAll('[data-i18n]').forEach(element => {
+                const key = element.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    element.textContent = translations[lang][key];
+                }
+            });
+            
+            // Обновляем placeholder
+            document.querySelectorAll('[data-i18n-ph]').forEach(element => {
+                const key = element.getAttribute('data-i18n-ph');
+                if (translations[lang][key]) {
+                    element.placeholder = translations[lang][key];
+                }
+            });
+            
+            // Обновляем title
+            document.querySelectorAll('[data-i18n-title]').forEach(element => {
+                const key = element.getAttribute('data-i18n-title');
+                if (translations[lang][key]) {
+                    element.title = translations[lang][key];
+                }
+            });
+            
+            // Обновляем кнопку языка
+            languageButton.querySelector('span').textContent = lang === 'ru' ? 'EN' : 'RU';
+            
+            // Обновляем информационное сообщение
+            updateConversionInfo();
+            
+            // Обновляем единицы измерения
+            updateUnitsDisplay();
+        }
+
+        // Обновляем информационное сообщение
+        function updateConversionInfo() {
+            const type = conversionTypeSelect.value;
+            conversionInfoElement.textContent = conversionInfo[type][currentLanguage];
+        }
+
+        // Обновляем отображение единиц измерения
+        function updateUnitsDisplay() {
+            const type = conversionTypeSelect.value;
+            const inputUnitKey = inputUnit.value;
+            const resultUnitKey = resultUnit.value;
+            
+            // Очищаем текущие опции
+            inputUnit.innerHTML = '';
+            resultUnit.innerHTML = '';
+            
+            // Добавляем новые опции с учетом языка
+            for (const [unitKey, unitData] of Object.entries(units[type])) {
+                const option1 = document.createElement('option');
+                option1.value = unitKey;
+                option1.textContent = `${unitData[currentLanguage].name} (${unitData[currentLanguage].symbol})`;
+                
+                const option2 = document.createElement('option');
+                option2.value = unitKey;
+                option2.textContent = `${unitData[currentLanguage].name} (${unitData[currentLanguage].symbol})`;
+                
+                inputUnit.appendChild(option1);
+                resultUnit.appendChild(option2);
+            }
+            
+            // Восстанавливаем выбранные значения
+            inputUnit.value = inputUnitKey;
+            resultUnit.value = resultUnitKey;
+            
+            // Если значения не установлены, устанавливаем значения по умолчанию
+            if (!inputUnit.value) {
+                inputUnit.value = defaultUnits[type].input;
+            }
+            if (!resultUnit.value) {
+                resultUnit.value = defaultUnits[type].result;
+            }
+            
+            // Выполняем конвертацию
+            convertUnits();
+        }
+
+        // Заполняем выпадающие списки единицами измерения
+        function populateUnitSelects(type) {
+            // Очищаем текущие опции
+            inputUnit.innerHTML = '';
+            resultUnit.innerHTML = '';
+            
+            // Добавляем новые опции
+            for (const [unitKey, unitData] of Object.entries(units[type])) {
+                const option1 = document.createElement('option');
+                option1.value = unitKey;
+                option1.textContent = `${unitData[currentLanguage].name} (${unitData[currentLanguage].symbol})`;
+                
+                const option2 = document.createElement('option');
+                option2.value = unitKey;
+                option2.textContent = `${unitData[currentLanguage].name} (${unitData[currentLanguage].symbol})`;
+                
+                inputUnit.appendChild(option1);
+                resultUnit.appendChild(option2);
+            }
+            
+            // Устанавливаем стандартные единицы
+            inputUnit.value = defaultUnits[type].input;
+            resultUnit.value = defaultUnits[type].result;
+            
+            // Обновляем информационное сообщение
+            updateConversionInfo();
+            
+            // Выполняем конвертацию
+            convertUnits();
+        }
+
+        // Обновляем активную иконку
+        function updateActiveIcon(type) {
+            iconOptions.forEach(icon => {
+                if (icon.dataset.type === type) {
+                    icon.classList.add('active');
+                } else {
+                    icon.classList.remove('active');
+                }
+            });
+        }
+
+        // Проверяем, не выбраны ли одинаковые единицы
+        function checkSameUnits() {
+            if (inputUnit.value === resultUnit.value) {
+                const type = conversionTypeSelect.value;
+                const unitKeys = Object.keys(units[type]);
+                
+                // Находим индекс текущей выбранной единицы
+                const currentIndex = unitKeys.indexOf(inputUnit.value);
+                
+                // Выбираем следующую единицу (или предыдущую, если текущая последняя)
+                const nextIndex = (currentIndex + 1) % unitKeys.length;
+                resultUnit.value = unitKeys[nextIndex];
+            }
+        }
+
+        // Функция смены единиц местами
+        function swapUnits() {
+            const tempUnit = inputUnit.value;
+            inputUnit.value = resultUnit.value;
+            resultUnit.value = tempUnit;
+            
+            // Если есть значение в поле результата, меняем его с входным значением
+            if (resultValue.value && inputValue.value) {
+                const tempValue = inputValue.value;
+                inputValue.value = resultValue.value;
+                resultValue.value = tempValue;
+            } else if (resultValue.value) {
+                // Если есть только результат, копируем его во входное поле
+                inputValue.value = resultValue.value;
+                convertUnits();
+            } else {
+                // Просто выполняем конвертацию
+                convertUnits();
+            }
+        }
+
+        // Функция конвертации
+        function convertUnits() {
+            const type = conversionTypeSelect.value;
+            const inputUnitKey = inputUnit.value;
+            const resultUnitKey = resultUnit.value;
+            
+            if (!inputValue.value || isNaN(inputValue.value)) {
+                resultValue.value = '';
+                return;
+            }
+            
+            const value = parseFloat(inputValue.value);
+            
+            if (type === 'currency') {
+                // Для валют используем специальную логику конвертации
+                if (!currencyRatesLoaded) {
+                    resultValue.value = 'Загрузка...';
+                    return;
+                }
+                
+                // Конвертируем через базовую валюту (USD)
+                const usdValue = value / units.currency[inputUnitKey].rate;
+                const result = usdValue * units.currency[resultUnitKey].rate;
+                
+                // Округляем до 6 знаков после запятой
+                resultValue.value = Math.round(result * 1000000) / 1000000;
+            } else {
+                // Для остальных типов конвертации
+                const baseValue = units[type][inputUnitKey].toBase(value);
+                const result = units[type][resultUnitKey].fromBase(baseValue);
+                
+                // Округляем до 6 знаков после запятой
+                resultValue.value = Math.round(result * 1000000) / 1000000;
+            }
+        }
+
+        // Обработчики событий
+        conversionTypeSelect.addEventListener('change', function() {
+            const type = this.value;
+            populateUnitSelects(type);
+            updateActiveIcon(type);
+        });
+
+        inputValue.addEventListener('input', convertUnits);
+        inputUnit.addEventListener('change', function() {
+            checkSameUnits();
+            convertUnits();
+        });
+        resultUnit.addEventListener('change', function() {
+            checkSameUnits();
+            convertUnits();
+        });
+
+        iconOptions.forEach(icon => {
+            icon.addEventListener('click', function() {
+                const type = this.dataset.type;
+                conversionTypeSelect.value = type;
+                populateUnitSelects(type);
+                updateActiveIcon(type);
+            });
+        });
+
+        swapButton.addEventListener('click', swapUnits);
+
+        languageButton.addEventListener('click', function() {
+            // Переключаем язык
+            currentLanguage = currentLanguage === 'ru' ? 'en' : 'ru';
+            translateInterface(currentLanguage);
+        });
+
+        // Инициализация при загрузке
+        populateUnitSelects(conversionTypeSelect.value);
+        updateActiveIcon(conversionTypeSelect.value);
+        
+        // Загружаем курсы валют при загрузке страницы
+        loadCurrencyRates();
+    </script>
+</body>
+</html>
